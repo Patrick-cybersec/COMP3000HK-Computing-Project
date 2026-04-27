@@ -1,0 +1,75 @@
+2026-04-27 18:39:02,966 WARNING Lockout triggered for user patrick anomaly_rate=0.425
+2026-04-27 18:39:06,968 INFO User patrick unlocked system successfully.
+2026-04-27 18:39:10,391 WARNING Alert send failed (attempt 1): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 18:39:14,095 WARNING Alert send failed (attempt 2): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 18:39:18,786 WARNING Alert send failed (attempt 3): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 18:39:30,108 WARNING Alert send failed (attempt 4): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 18:39:38,111 ERROR Alert send permanently failed: patrick-1777286343
+2026-04-27 18:47:24,806 WARNING Lockout triggered for user patrick anomaly_rate=0.51875
+2026-04-27 18:47:28,839 INFO User patrick unlocked system successfully.
+2026-04-27 18:47:32,075 WARNING Alert send failed (attempt 1): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 18:47:35,805 WARNING Alert send failed (attempt 2): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 18:47:40,509 WARNING Alert send failed (attempt 3): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 18:47:51,794 WARNING Alert send failed (attempt 4): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 18:47:59,796 ERROR Alert send permanently failed: patrick-1777286844
+2026-04-27 18:50:39,207 WARNING Lockout triggered for user patrick anomaly_rate=0.43125
+2026-04-27 18:50:43,170 INFO User patrick unlocked system successfully.
+2026-04-27 18:50:46,511 WARNING Alert send failed (attempt 1): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 18:50:50,223 WARNING Alert send failed (attempt 2): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 18:50:54,934 WARNING Alert send failed (attempt 3): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 18:51:06,235 WARNING Alert send failed (attempt 4): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 18:51:14,237 ERROR Alert send permanently failed: patrick-1777287039
+2026-04-27 19:02:51,837 WARNING Lockout triggered for user patrick anomaly_rate=0.3875
+2026-04-27 19:02:55,650 INFO User patrick unlocked system successfully.
+2026-04-27 19:02:59,130 WARNING Alert send failed (attempt 1): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:03:02,857 WARNING Alert send failed (attempt 2): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:03:07,571 WARNING Alert send failed (attempt 3): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:03:18,885 WARNING Alert send failed (attempt 4): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:03:26,888 ERROR Alert send permanently failed: patrick-1777287771
+2026-04-27 19:06:48,914 WARNING Lockout triggered for user patrick anomaly_rate=0.38125
+2026-04-27 19:06:52,457 INFO User patrick unlocked system successfully.
+2026-04-27 19:06:56,242 WARNING Alert send failed (attempt 1): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:06:59,984 WARNING Alert send failed (attempt 2): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:07:04,698 WARNING Alert send failed (attempt 3): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:07:15,963 WARNING Alert send failed (attempt 4): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:07:23,964 ERROR Alert send permanently failed: patrick-1777288008
+2026-04-27 19:08:40,585 WARNING Lockout triggered for user patrick anomaly_rate=0.36875
+2026-04-27 19:08:44,806 INFO User patrick unlocked system successfully.
+2026-04-27 19:08:47,900 WARNING Alert send failed (attempt 1): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:08:51,637 WARNING Alert send failed (attempt 2): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:08:56,340 WARNING Alert send failed (attempt 3): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:09:07,609 WARNING Alert send failed (attempt 4): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:09:15,618 ERROR Alert send permanently failed: patrick-1777288120
+2026-04-27 19:16:09,850 WARNING Lockout triggered for user patrick anomaly_rate=0.475
+2026-04-27 19:16:13,211 INFO User patrick unlocked system successfully.
+2026-04-27 19:16:17,138 WARNING Alert send failed (attempt 1): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:16:20,847 WARNING Alert send failed (attempt 2): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:16:25,564 WARNING Alert send failed (attempt 3): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:16:36,847 WARNING Alert send failed (attempt 4): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:16:44,848 ERROR Alert send permanently failed: patrick-1777288569
+2026-04-27 19:21:22,049 WARNING Lockout triggered for user patrick anomaly_rate=0.45
+2026-04-27 19:21:25,734 INFO User patrick unlocked system successfully.
+2026-04-27 19:21:29,333 WARNING Alert send failed (attempt 1): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:21:33,086 WARNING Alert send failed (attempt 2): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:21:37,793 WARNING Alert send failed (attempt 3): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:21:49,083 WARNING Alert send failed (attempt 4): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:21:57,085 ERROR Alert send permanently failed: patrick-1777288882
+2026-04-27 19:25:00,583 WARNING Lockout triggered for user patrick anomaly_rate=0.36250000000000004
+2026-04-27 19:25:03,898 INFO User patrick unlocked system successfully.
+2026-04-27 19:25:07,886 WARNING Alert send failed (attempt 1): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:25:11,613 WARNING Alert send failed (attempt 2): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:25:16,354 WARNING Alert send failed (attempt 3): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:25:27,687 WARNING Alert send failed (attempt 4): HTTPSConnectionPool(host='admin-vm.local', port=443): Max retries exceeded with url: /alerts (Caused by NameResolutionError("HTTPSConnection(host='admin-vm.local', port=443): Failed to resolve 'admin-vm.local' ([Errno 11001] getaddrinfo failed)"))
+2026-04-27 19:25:35,689 ERROR Alert send permanently failed: patrick-1777289100
+2026-04-28 01:11:26,417 WARNING Lockout triggered for user patrick anomaly_rate=0.5625
+2026-04-28 01:11:29,724 INFO User patrick unlocked system successfully.
+2026-04-28 01:32:11,408 WARNING Lockout triggered for user patrick anomaly_rate=0.5249999999999999
+2026-04-28 01:32:15,969 INFO User patrick unlocked system successfully.
+2026-04-28 01:45:51,850 WARNING Lockout triggered for user patrick anomaly_rate=0.425
+2026-04-28 01:45:56,393 INFO User patrick unlocked system successfully.
+2026-04-28 01:55:18,290 WARNING Lockout triggered for user patrick anomaly_rate=0.4125
+2026-04-28 01:55:22,203 INFO User patrick unlocked system successfully.
+2026-04-28 01:56:48,011 WARNING Lockout triggered for user patrick anomaly_rate=0.35625
+2026-04-28 01:56:51,707 INFO User patrick unlocked system successfully.
+2026-04-28 02:18:53,074 WARNING Lockout triggered for user patrick anomaly_rate=0.36875
+2026-04-28 02:18:57,980 INFO User patrick unlocked system successfully.
