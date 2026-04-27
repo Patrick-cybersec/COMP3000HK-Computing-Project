@@ -6,6 +6,14 @@ import base64
 import threading
 import numpy as np
 import tkinter as tk
+import logging
+from logging.handlers import RotatingFileHandler
+import requests
+import json
+import hmac
+import hashlib
+import os
+import time
 from tkinter import messagebox, simpledialog
 
 # AI / ML Imports
@@ -19,6 +27,7 @@ import joblib
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from bioguard_auth import build_alert
 
 
 class BioGuardML:
@@ -52,6 +61,22 @@ class BioGuardML:
         # Models
         self.models = {}
         self.model_lock = threading.Lock()
+
+        # Logging: rotating file for events and alerts
+        log_dir = "logs"
+        os.makedirs(log_dir, exist_ok=True)
+        self.logger = logging.getLogger("BioGuard")
+        self.logger.setLevel(logging.INFO)
+        handler = RotatingFileHandler(os.path.join(log_dir, "bioguard.log"), maxBytes=5_000_000, backupCount=5)
+        formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+        handler.setFormatter(formatter)
+        self.logger.addHandler(handler)
+
+        # Alert config (set these environment variables or replace with constants)
+        self.ADMIN_URL = os.environ.get("BIOGUARD_ADMIN_URL", "https://admin-vm.local/alerts")
+        self.ALERT_API_KEY = os.environ.get("BIOGUARD_ALERT_API_KEY", "replace_with_api_key")
+        self.ALERT_HMAC_KEY = os.environ.get("BIOGUARD_ALERT_HMAC_KEY", "replace_with_hmac_key").encode()
+
 
         if not os.path.exists(self.MODEL_DIR):
             os.makedirs(self.MODEL_DIR)
@@ -325,10 +350,20 @@ class BioGuardML:
         self.mode = "MONITOR"
         print(f"BioGuard Active: Spatially-Aware Monitoring for '{self.current_user}'...")
 
-    def trigger_lockout(self):
+    def trigger_lockout(self, anomaly_rate=None):
         self.is_locked = True
         self.mode = "IDLE"
         self.safe_keystrokes = []
+        self.logger.warning(f"Lockout triggered for user {self.current_user} anomaly_rate={anomaly_rate}")
+
+        # Send alert asynchronously so UI isn't blocked
+        try:
+            threading.Thread(
+                target=lambda: build_alert(self.current_user, anomaly_rate or 0.0, self.WINDOW_SIZE),
+                daemon=True
+            ).start()
+        except Exception as e:
+            self.logger.error(f"Failed to start alert thread: {e}")
 
         lock_win = tk.Toplevel(self.root)
         lock_win.attributes("-fullscreen", True)
@@ -336,26 +371,43 @@ class BioGuardML:
         lock_win.attributes("-topmost", True)
         lock_win.protocol("WM_DELETE_WINDOW", lambda: None)
 
-        tk.Label(lock_win, text="SYSTEM LOCKED", fg="white", bg="#c23616",
-                 font=("Courier", 50, "bold")).pack(pady=100)
-        tk.Label(lock_win, text="Anomalous typing rhythm detected.", fg="white", bg="#c23616",
-                 font=("Arial", 20)).pack(pady=20)
+        tk.Label(lock_win, text="SYSTEM LOCKED", fg="white", bg="#c23616", font=("Courier", 50, "bold")).pack(pady=100)
+        tk.Label(lock_win, text="Anomalous typing rhythm detected.", fg="white", bg="#c23616", font=("Arial", 20)).pack(pady=20)
+
+        # Unlock attempt tracking
+        if not hasattr(self, "failed_unlocks"):
+            self.failed_unlocks = 0
+            self.last_failed_time = 0
 
         def unlock():
-            pwd = simpledialog.askstring("Unlock", f"Enter Password for {self.current_user}:",
-                                         show='*', parent=lock_win)
+            # Enforce cooldown after 3 failed attempts
+            now = time.time()
+            if self.failed_unlocks >= 3 and (now - self.last_failed_time) < 30:
+                wait = int(30 - (now - self.last_failed_time))
+                messagebox.showwarning("Cooldown", f"Too many attempts. Please wait {wait} seconds.", parent=lock_win)
+                return
+
+            pwd = simpledialog.askstring("Unlock", f"Enter Password for {self.current_user}:", show='*', parent=lock_win)
+            if pwd is None:
+                return
+
             if pwd == self.current_password:
                 self.is_locked = False
                 self.keystroke_count = 0
                 self.mode = "MONITOR"
                 self.live_buffer.clear()
                 lock_win.destroy()
+                self.failed_unlocks = 0
+                self.last_failed_time = 0
+                self.logger.info(f"User {self.current_user} unlocked system successfully.")
                 print("Identity verified. Resuming monitoring.")
-            elif pwd is not None:
+            else:
+                self.failed_unlocks = getattr(self, "failed_unlocks", 0) + 1
+                self.last_failed_time = time.time()
+                self.logger.warning(f"Failed unlock attempt {self.failed_unlocks} for user {self.current_user}")
                 messagebox.showerror("Denied", "Incorrect Password!", parent=lock_win)
 
-        tk.Button(lock_win, text="UNLOCK SYSTEM", command=unlock, font=("Arial", 18, "bold"),
-                  bg="black", fg="white", width=20, height=3).pack(pady=50)
+        tk.Button(lock_win, text="UNLOCK SYSTEM", command=unlock, font=("Arial", 18, "bold"), bg="black", fg="white", width=20, height=3).pack(pady=50)
 
     # ==================== FEATURE EXTRACTION ====================
     def _get_key_zone(self, key):
@@ -444,7 +496,7 @@ class BioGuardML:
                 print(f"[Alert] Ensemble Rate: {anomaly_rate:.2%} (Threshold: {self.ANOMALY_THRESHOLD:.2%})")
 
             if anomaly_rate > self.ANOMALY_THRESHOLD:
-                self.root.after(0, self.trigger_lockout)
+                self.root.after(0, lambda: self.trigger_lockout(anomaly_rate))
 
             # Slide window forward by 40%
             for _ in range(int(self.WINDOW_SIZE * 0.4)):
@@ -525,6 +577,38 @@ class BioGuardML:
             if hold_time < 1.0:
                 # 3D VECTOR: [Hold Time, Flight Time, Spatial Hand Transition]
                 self.process_keystroke_vector([hold_time, flight_time, is_same_hand])
+    
+    def _send_alert(self, username, anomaly_rate, window_size):
+        payload = {
+            "event": "anomaly_lockout",
+            "user": username,
+            "anomaly_rate": round(float(anomaly_rate), 4),
+            "window_size": int(window_size),
+            "timestamp": int(time.time()),
+            "event_id": f"{username}-{int(time.time())}"
+        }
+        body = json.dumps(payload, separators=(",", ":")).encode()
+        signature = hmac.new(self.ALERT_HMAC_KEY, body, hashlib.sha256).hexdigest()
+        headers = {
+            "Content-Type": "application/json",
+            "X-API-Key": self.ALERT_API_KEY,
+            "X-Signature": signature
+        }
+
+        # Simple retry with exponential backoff
+        backoff = 1
+        for attempt in range(4):
+            try:
+                r = requests.post(self.ADMIN_URL, data=body, headers=headers, timeout=5, verify=True)
+                r.raise_for_status()
+                self.logger.info(f"Alert sent: {payload['event_id']} to {self.ADMIN_URL}")
+                return True
+            except Exception as e:
+                self.logger.warning(f"Alert send failed (attempt {attempt+1}): {e}")
+                time.sleep(backoff)
+                backoff *= 2
+        self.logger.error(f"Alert send permanently failed: {payload['event_id']}")
+        return False
 
 
 if __name__ == "__main__":
