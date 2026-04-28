@@ -20,6 +20,8 @@ def hash_password(password):
 
 def register(username, password, keystroke_profile):
     username = username.strip().lower()
+    if not username:
+        raise ValueError("Username cannot be empty")
     db = load_db()
     if username in db:
         raise ValueError("Username already exists")

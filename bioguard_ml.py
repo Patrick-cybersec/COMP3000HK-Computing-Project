@@ -28,6 +28,7 @@ from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from bioguard_auth import build_alert
+from bioguard_auth import register
 
 
 class BioGuardML:
@@ -294,6 +295,12 @@ class BioGuardML:
 
         self.base_train_data = combined_data.tolist()
         self.train_and_save_models(self.base_train_data)
+
+        # NEW: update users.json
+        try:
+            register(self.current_user.strip().lower(), self.current_password, {"baseline": "keystroke_data"})
+        except ValueError:
+            print(f"User {self.current_user} already exists in users.json, skipping registration.")
 
         messagebox.showinfo("Success", "Fixed-text AI profile created!\nStarting active monitoring.")
         self.mode = "MONITOR"
