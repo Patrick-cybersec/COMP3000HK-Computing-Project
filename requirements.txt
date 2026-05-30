@@ -1,0 +1,13 @@
+numpy
+pandas
+scikit-learn
+joblib
+cryptography
+pynput
+matplotlib
+shap
+requests
+uvicorn
+fastapi
+jinja2
+bcrypt
