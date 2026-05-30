@@ -1,0 +1,112 @@
+{
+  "patrick": {
+    "password_hash": "89e01536ac207279409d4de1e5253e01f4a1769e696db0d6062ca9b8f56767c8",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    }
+  },
+  "mary": {
+    "password_hash": "5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    }
+  },
+  "alice": {
+    "password_hash": "$2b$12$/pOFTr5N4vinfYSrRFI6JOZUXHcFkWsiKjp8sk/XIkFOE8zWLFhxS",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "peter": {
+    "password_hash": "$2b$12$JkF6qHYqTJneQs/A6EUMc.SjNpB/6x/V4bEc.7FMZXQ.zbClewhou",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "leo": {
+    "password_hash": "$2b$12$lD3OuoZSlh.3n80vBxZIP.q6EDM1U0LzeFVxdW.1hONV/XBHwYDa.",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "chan": {
+    "password_hash": "$2b$12$vpuQZQbryBg.p/9zHqevIe0sgcDEX7NnzE77dYyf1w/AEpCWcAcCu",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "tang": {
+    "password_hash": "$2b$12$zSshMkw.hLIaMMrqGZtlm.9rjfPlRxMhc4BvULOfTEY1e/ZFyfQ8y",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "testuser1": {
+    "password_hash": "$2b$12$VYM/p6rT1zPPUdKHzmkHeOEN23/MtP32DajeMCht/cNpwGOwTAMsa",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "ray": {
+    "password_hash": "$2b$12$B3jKEEou.MaFIGXQZ3/LjOVKDuPd9aR9A37AvgfL0v9CYY7hKiSMu",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "daphne": {
+    "password_hash": "$2b$12$Rsqha76AroEjJouRUbFawOvmKBguBWQNw5I8F39TDbhCBhiHVUoPe",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "tammy": {
+    "password_hash": "$2b$12$B5WaCrpnrH7Tbwyd3inI5u9Ykncd3fDuUZCa9Y66vPsYQsN.wkoVK",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "owen": {
+    "password_hash": "$2b$12$Kh2BH77KYLESpVkN3znLy.J/DewQKywjJCsUT69oz.pOGm8WX5X1S",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "pak": {
+    "password_hash": "$2b$12$LH0lmQEWm3nghILpq775fuzfNWu4uapH7BdOMMlGFEZTFO4ixulDS",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "chun": {
+    "password_hash": "$2b$12$FbqFJvY58h3IU5OV3NZJgeC591VXEHH4kXpUvtEJae1h0r4l0znz2",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "wong": {
+    "password_hash": "$2b$12$EOQr7YObxQbUPXBMnzB1XuKLrD3JkmH.m10QsIPzczzesedrQvyqm",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  },
+  "yoyo": {
+    "password_hash": "$2b$12$oCpASr3kWI8.92I9ScCBJOj3xnUo.nhAlc60mzHOh8DhrYy1FaUQa",
+    "keystroke_profile": {
+      "baseline": "keystroke_data"
+    },
+    "role": "user"
+  }
+}
