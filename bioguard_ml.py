@@ -12,8 +12,13 @@ import requests
 import json
 import hmac
 import hashlib
-import os
-import time
+# add these imports near the top
+import threading, datetime
+import shap
+import pandas as pd
+from sklearn.ensemble import IsolationForest
+# (IsolationForest already used)
+
 from tkinter import messagebox, simpledialog
 
 # AI / ML Imports
@@ -22,6 +27,7 @@ from collections import deque
 from sklearn.ensemble import IsolationForest
 from sklearn.svm import OneClassSVM
 import joblib
+import csv
 
 # Cryptography Imports
 from cryptography.fernet import Fernet
@@ -30,15 +36,69 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from bioguard_auth import build_alert
 from bioguard_auth import register
 
+def log_keystroke(account, event, key, timestamp):
+    filename = os.path.join("data", f"{account}_genuine.csv")
+    os.makedirs("data", exist_ok=True)
+    new_file = not os.path.exists(filename)
+    with open(filename, "a", newline="") as f:
+        writer = csv.writer(f)
+        if new_file:
+            writer.writerow(['user_id','type','event','key','time'])
+        writer.writerow([account, 'key', event, key, round(timestamp, 4)])
+
+def convert_csv_to_npy(self, csv_path):
+    import pandas as pd
+    press_times = {}
+    vectors = []
+    last_release_time = None
+    last_hand_zone = None
+
+    def get_zone(key: str):
+        key = key.lower()
+        if any(c in key for c in "qwertasdfgzxcvb"): return 1
+        if any(c in key for c in "yuiophjklnm"): return 2
+        return 0
+
+    df = pd.read_csv(csv_path)
+    for _, row in df.iterrows():
+        event, key, t = row["event"], str(row["key"]), float(row["time"])
+        if event == "press":
+            press_times[key] = t
+        elif event == "release" and key in press_times:
+            hold_time = t - press_times.pop(key)
+            flight_time = 0.0
+            if last_release_time is not None:
+                flight_time = min(t - last_release_time, 2.0)
+            zone = get_zone(key)
+            hand_transition = 0.5
+            if last_hand_zone in [1,2] and zone in [1,2]:
+                hand_transition = 1.0 if last_hand_zone == zone else 0.0
+            last_release_time, last_hand_zone = t, zone
+            if hold_time < 1.0:
+                vectors.append([hold_time, flight_time, hand_transition])
+
+    arr = np.array(vectors)
+    npy_path = csv_path.replace(".csv",".npy")
+    np.save(npy_path, arr)
+    print(f"Converted {csv_path} → {npy_path} with {len(arr)} samples")
+    return npy_path
+
 
 class BioGuardML:
     def __init__(self):
         # [CAPSTONE UPGRADE] - Adjusted for realistic behavioral trends
         self.WINDOW_SIZE = 80
-        self.ANOMALY_THRESHOLD = 0.35
-        self.MIN_TRAIN_KEYS = 300
-        self.RETRAIN_INTERVAL = 300
+        self.ANOMALY_THRESHOLD = 0.3
+        self.MIN_TRAIN_KEYS = 500
+        self.RETRAIN_INTERVAL = 500
         self.MODEL_DIR = "secure_profiles"
+        # confirmed good keystrokes from successful unlocks
+        self.confirmed_good = []          # list of vectors
+        self.retrain_lock = threading.Lock()
+        self.retrain_interval_seconds = 1200  # schedule retrain every 5 minutes if new confirmed data
+        self.last_retrain_time = 0
+        self.model_version = 0
+
 
         # State Variables
         self.current_user = None
@@ -73,10 +133,11 @@ class BioGuardML:
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
 
+
         # Alert config (set these environment variables or replace with constants)
-        self.ADMIN_URL = os.environ.get("BIOGUARD_ADMIN_URL", "https://admin-vm.local/alerts")
-        self.ALERT_API_KEY = os.environ.get("BIOGUARD_ALERT_API_KEY", "replace_with_api_key")
-        self.ALERT_HMAC_KEY = os.environ.get("BIOGUARD_ALERT_HMAC_KEY", "replace_with_hmac_key").encode()
+        self.ADMIN_URL = os.environ.get("BIOGUARD_ADMIN_URL", "http://127.0.0.1:8000/alerts")
+        self.ALERT_API_KEY = os.environ.get("BIOGUARD_ALERT_API_KEY", "test_api_key")
+        self.ALERT_HMAC_KEY = os.environ.get("BIOGUARD_ALERT_HMAC_KEY", "test_hmac_key").encode()
 
 
         if not os.path.exists(self.MODEL_DIR):
@@ -87,6 +148,7 @@ class BioGuardML:
         self.start_listeners()
         self.show_auth_screen()
         self.root.mainloop()
+        pass
 
     # ==================== CRYPTO & STORAGE ====================
     def _get_encryption_key(self, password, salt=b'bioguard_project_2026'):
@@ -117,6 +179,8 @@ class BioGuardML:
         filepath = os.path.join(self.MODEL_DIR, f"{username}.enc")
         with open(filepath, 'wb') as f:
             f.write(encrypted_data)
+        self.logger.info(f"Saved models for {username} (version {self.model_version})")
+
 
     def load_models(self, username, password):
         filepath = os.path.join(self.MODEL_DIR, f"{username}.enc")
@@ -147,48 +211,56 @@ class BioGuardML:
                  font=("Arial", 20, "bold")).pack(pady=20)
 
         tk.Label(auth_win, text="Username:", fg="white", bg="#1e272e", font=("Arial", 12)).pack()
-        user_entry = tk.Entry(auth_win, font=("Arial", 12), width=25)
-        user_entry.pack(pady=5)
+        self.username_entry = tk.Entry(auth_win, font=("Arial", 12), width=25)
+        self.username_entry.pack(pady=5)
 
         tk.Label(auth_win, text="Password:", fg="white", bg="#1e272e", font=("Arial", 12)).pack()
-        pass_entry = tk.Entry(auth_win, font=("Arial", 12), width=25, show="*")
-        pass_entry.pack(pady=5)
+        self.password_entry = tk.Entry(auth_win, font=("Arial", 12), width=25, show="*")
+        self.password_entry.pack(pady=5)
 
-        def attempt_login():
-            user = user_entry.get().strip()
-            pwd = pass_entry.get().strip()
+        tk.Button(auth_win, text="Register New Profile", command=self.attempt_register,
+                  bg="#ffdd59", fg="black", width=25, font=("Arial", 10)).pack(pady=10)
 
-            loaded_models, loaded_data = self.load_models(user, pwd)
-            if loaded_models is None:
-                messagebox.showerror("Error", "Profile not found. Please Register.")
-            elif loaded_models is False:
-                messagebox.showerror("Error", "Access Denied. Incorrect Password.")
-            else:
-                self.current_user = user
-                self.current_password = pwd
-                self.models = loaded_models
-                self.base_train_data = loaded_data
-                auth_win.destroy()
-                self.start_monitoring()
-
-        def attempt_register():
-            user = user_entry.get().strip()
-            pwd = pass_entry.get().strip()
-            if len(user) < 3 or len(pwd) < 4:
-                messagebox.showerror("Error", "Username > 3 chars, Password > 4 chars required.")
-                return
-
-            self.current_user = user
-            self.current_password = pwd
-            auth_win.destroy()
-            self.show_registration_screen()
-
-        tk.Button(auth_win, text="Login & Monitor", command=attempt_login,
+        tk.Button(auth_win, text="Login & Monitor", command=lambda: self.attempt_login(auth_win),
                   bg="#05c46b", fg="white", width=25, height=2,
                   font=("Arial", 10, "bold")).pack(pady=15)
-        tk.Button(auth_win, text="Register New Profile", command=attempt_register,
-                  bg="#ffdd59", fg="black", width=25, font=("Arial", 10)).pack()
 
+    def attempt_register(self):
+        username = self.username_entry.get().strip().lower()
+        password = self.password_entry.get().strip()
+
+        # Load existing users
+        with open("users.json", "r") as f:
+            users = json.load(f)
+
+        if username in users:
+            messagebox.showerror("Error", f"User '{username}' already exists. Please choose a different username.")
+            self.mode = "IDLE"
+            self.show_auth_screen()
+            return
+
+        self.current_user = username
+        self.current_password = password
+        self.mode = "ENROLL"
+        self.show_registration_screen(username)
+
+    def attempt_login(self, auth_win):
+        user = self.username_entry.get().strip()
+        pwd = self.password_entry.get().strip()
+
+        loaded_models, loaded_data = self.load_models(user, pwd)
+        if loaded_models is None:
+            messagebox.showerror("Error", "Profile not found. Please Register.")
+        elif loaded_models is False:
+            messagebox.showerror("Error", "Access Denied. Incorrect Password.")
+        else:
+            self.current_user = user
+            self.current_password = pwd
+            self.models = loaded_models
+            self.base_train_data = loaded_data
+            auth_win.destroy()
+            self.start_monitoring()
+            
     def show_registration_screen(self, default_name=""):
         reg_win = tk.Toplevel(self.root)
         reg_win.title("BioGuard - Fixed-Text Enrollment")
@@ -254,6 +326,43 @@ class BioGuardML:
                   bg="#00ff9f", fg="black", width=30, height=2).pack(pady=30)
         start_next_session()
 
+    def convert_csv_to_npy(self, csv_path):
+        import pandas as pd
+        press_times = {}
+        vectors = []
+        last_release_time = None
+        last_hand_zone = None
+
+        def get_zone(key: str):
+            key = key.lower()
+            if any(c in key for c in "qwertasdfgzxcvb"): return 1
+            if any(c in key for c in "yuiophjklnm"): return 2
+            return 0
+
+        df = pd.read_csv(csv_path)
+        for _, row in df.iterrows():
+            event, key, t = row["event"], str(row["key"]), float(row["time"])
+            if event == "press":
+                press_times[key] = t
+            elif event == "release" and key in press_times:
+                hold_time = t - press_times.pop(key)
+                flight_time = 0.0
+                if last_release_time is not None:
+                    flight_time = min(t - last_release_time, 2.0)
+                zone = get_zone(key)
+                hand_transition = 0.5
+                if last_hand_zone in [1,2] and zone in [1,2]:
+                    hand_transition = 1.0 if last_hand_zone == zone else 0.0
+                last_release_time, last_hand_zone = t, zone
+                if hold_time < 1.0:
+                    vectors.append([hold_time, flight_time, hand_transition])
+
+        arr = np.array(vectors)
+        npy_path = csv_path.replace(".csv",".npy")
+        np.save(npy_path, arr)
+        print(f"Converted {csv_path} → {npy_path} with {len(arr)} samples")
+        return npy_path
+
     def finalize_fixed_text_enrollment(self, username):
         if not hasattr(self, "training_sessions") or len(self.training_sessions) == 0:
             messagebox.showerror("Error", "No training data collected. Please retry enrollment.")
@@ -300,7 +409,20 @@ class BioGuardML:
         try:
             register(self.current_user.strip().lower(), self.current_password, {"baseline": "keystroke_data"})
         except ValueError:
-            print(f"User {self.current_user} already exists in users.json, skipping registration.")
+            messagebox.showerror("Error", f"User '{self.current_user}' already exists. Please choose a different username.")
+            self.mode = "IDLE"
+            self.show_auth_screen()   # go back to login/registration
+            return
+        
+        # Existing training
+        self.base_train_data = combined_data.tolist()
+        self.train_and_save_models(self.base_train_data)
+
+        csv_path = os.path.join("data", f"{username}_genuine.csv")
+        if os.path.exists(csv_path):
+            npy_path = self.convert_csv_to_npy(csv_path)
+            if npy_path:
+                print(f"Enrollment complete. Features saved to {npy_path}")
 
         messagebox.showinfo("Success", "Fixed-text AI profile created!\nStarting active monitoring.")
         self.mode = "MONITOR"
@@ -308,6 +430,8 @@ class BioGuardML:
         self.live_buffer.clear()
         self.start_monitoring()
 
+    
+    
     # ==================== ENSEMBLE TRAINING & ADAPTIVE AI ====================
     def train_and_save_models(self, data_list):
         print("Training Spatially-Aware ML Models...")
@@ -357,7 +481,9 @@ class BioGuardML:
         self.mode = "MONITOR"
         print(f"BioGuard Active: Spatially-Aware Monitoring for '{self.current_user}'...")
 
-    def trigger_lockout(self, anomaly_rate=None):
+    def trigger_lockout(self, anomaly_rate=None, explanation=None, severity="low"):
+        if self.is_locked:
+            return  # already locked, don't spawn another window
         self.is_locked = True
         self.mode = "IDLE"
         self.safe_keystrokes = []
@@ -366,7 +492,13 @@ class BioGuardML:
         # Send alert asynchronously so UI isn't blocked
         try:
             threading.Thread(
-                target=lambda: build_alert(self.current_user, anomaly_rate or 0.0, self.WINDOW_SIZE),
+                target=lambda: build_alert(
+                    self.current_user,
+                    anomaly_rate or 0.0,
+                    self.WINDOW_SIZE,
+                    explanation=explanation or "Lockout triggered",
+                    severity=severity or "low"
+                ),
                 daemon=True
             ).start()
         except Exception as e:
@@ -378,8 +510,10 @@ class BioGuardML:
         lock_win.attributes("-topmost", True)
         lock_win.protocol("WM_DELETE_WINDOW", lambda: None)
 
-        tk.Label(lock_win, text="SYSTEM LOCKED", fg="white", bg="#c23616", font=("Courier", 50, "bold")).pack(pady=100)
-        tk.Label(lock_win, text="Anomalous typing rhythm detected.", fg="white", bg="#c23616", font=("Arial", 20)).pack(pady=20)
+        tk.Label(lock_win, text="SYSTEM LOCKED", fg="white", bg="#c23616",
+                font=("Courier", 50, "bold")).pack(pady=100)
+        tk.Label(lock_win, text="Anomalous typing rhythm detected.",
+                fg="white", bg="#c23616", font=("Arial", 20)).pack(pady=20)
 
         # Unlock attempt tracking
         if not hasattr(self, "failed_unlocks"):
@@ -387,7 +521,6 @@ class BioGuardML:
             self.last_failed_time = 0
 
         def unlock():
-            # Enforce cooldown after 3 failed attempts
             now = time.time()
             if self.failed_unlocks >= 3 and (now - self.last_failed_time) < 30:
                 wait = int(30 - (now - self.last_failed_time))
@@ -399,22 +532,51 @@ class BioGuardML:
                 return
 
             if pwd == self.current_password:
+                # Reset lockout state
                 self.is_locked = False
                 self.keystroke_count = 0
                 self.mode = "MONITOR"
                 self.live_buffer.clear()
                 lock_win.destroy()
+
                 self.failed_unlocks = 0
                 self.last_failed_time = 0
+
                 self.logger.info(f"User {self.current_user} unlocked system successfully.")
                 print("Identity verified. Resuming monitoring.")
+
+                # Adaptive profiling
+                if len(self.safe_keystrokes) > 0:
+                    with self.retrain_lock:
+                        self.confirmed_good.extend(self.safe_keystrokes)
+                        self.safe_keystrokes = []
+                if len(self.confirmed_good) >= 200 and (time.time() - self.last_retrain_time) > self.retrain_interval_seconds:
+                    threading.Thread(target=self._background_retrain, daemon=True).start()
             else:
-                self.failed_unlocks = getattr(self, "failed_unlocks", 0) + 1
+                self.failed_unlocks += 1
                 self.last_failed_time = time.time()
                 self.logger.warning(f"Failed unlock attempt {self.failed_unlocks} for user {self.current_user}")
                 messagebox.showerror("Denied", "Incorrect Password!", parent=lock_win)
 
-        tk.Button(lock_win, text="UNLOCK SYSTEM", command=unlock, font=("Arial", 18, "bold"), bg="black", fg="white", width=20, height=3).pack(pady=50)
+        tk.Button(lock_win, text="UNLOCK SYSTEM", command=unlock,
+                font=("Arial", 18, "bold"), bg="black", fg="white",
+                width=20, height=3).pack(pady=50)
+
+    def _background_retrain(self):
+        with self.retrain_lock:
+            if len(self.confirmed_good) == 0:
+                return
+            print("[AI] Background retrain starting...")
+            combined = (self.base_train_data + self.confirmed_good)[-3000:]
+            try:
+                self.train_and_save_models(combined)
+                self.base_train_data = combined[-1500:]
+                self.confirmed_good = []
+                self.model_version += 1
+                self.last_retrain_time = time.time()
+                self.logger.info(f"Adaptive retrain complete. Model version {self.model_version}")
+            except Exception as e:
+                self.logger.error(f"Adaptive retrain failed: {e}")
 
     # ==================== FEATURE EXTRACTION ====================
     def _get_key_zone(self, key):
@@ -499,6 +661,55 @@ class BioGuardML:
             rate_svm = np.sum(pred_svm == -1) / self.WINDOW_SIZE
             anomaly_rate = (rate_iso + rate_svm) / 2
 
+            # after computing anomaly_rate
+# Build a simple explanation using SHAP for the IsolationForest (tree-based)
+            explanation = {}
+            severity = "low"
+            try:
+                # compute shap values for the window using tree explainer if available
+                if hasattr(self.models.get('iforest'), "estimators_"):
+                    # shap expects 2D array
+                    explainer = shap.TreeExplainer(self.models['iforest'])
+                    shap_vals = explainer.shap_values(current_window)
+                    # summarize absolute mean per feature
+                    mean_abs = np.mean(np.abs(shap_vals), axis=0).tolist()
+                    explanation = {"feature_importance": {"hold_time": mean_abs[0], "flight_time": mean_abs[1], "hand_transition": mean_abs[2]}}
+                else:
+                    explanation = {"note": "no-tree-explainer"}
+            except Exception as e:
+                explanation = {
+                    "fallback": "mean feature values",
+                    "hold_time": float(np.mean(current_window[:,0])),
+                    "flight_time": float(np.mean(current_window[:,1])),
+                    "hand_transition": float(np.mean(current_window[:,2]))
+                }
+
+            # severity scoring: combine anomaly_rate, recent failed unlocks, and frequency of lockouts
+            score = anomaly_rate
+            # weight failed unlocks (if attribute exists)
+            failed = getattr(self, "failed_unlocks", 0)
+            score += min(failed * 0.05, 0.2)
+            # if many lockouts recently (you can track a list of timestamps), increase score
+            recent_lockouts = getattr(self, "recent_lockouts", [])
+            now = time.time()
+            recent_count = sum(1 for t in recent_lockouts if now - t < 3600)
+            score += min(recent_count * 0.05, 0.3)
+
+            if score > 0.6:
+                severity = "high"
+            elif score > 0.35:
+                severity = "medium"
+            else:
+                severity = "low"
+
+            # attach explanation and severity to alert if lockout triggered
+            if anomaly_rate > self.ANOMALY_THRESHOLD:
+                # record lockout timestamp
+                self.recent_lockouts = getattr(self, "recent_lockouts", []) + [time.time()]
+                # trigger lockout (which will send the alert itself)
+                self.root.after(0, lambda: self.trigger_lockout(anomaly_rate))
+
+
             if anomaly_rate > 0.05:
                 print(f"[Alert] Ensemble Rate: {anomaly_rate:.2%} (Threshold: {self.ANOMALY_THRESHOLD:.2%})")
 
@@ -551,6 +762,10 @@ class BioGuardML:
             self.last_key_zone = current_zone
             self.current_flight_times[key_id + "_hand"] = is_same_hand
 
+        timestamp = time.time()
+        log_keystroke(self.current_user, "press", str(key), timestamp)
+
+
     def on_release(self, key):
         if self.is_locked:
             return
@@ -584,6 +799,9 @@ class BioGuardML:
             if hold_time < 1.0:
                 # 3D VECTOR: [Hold Time, Flight Time, Spatial Hand Transition]
                 self.process_keystroke_vector([hold_time, flight_time, is_same_hand])
+        
+        timestamp = time.time()
+        log_keystroke(self.current_user, "release", str(key), timestamp)
     
     def _send_alert(self, username, anomaly_rate, window_size):
         payload = {
@@ -616,7 +834,7 @@ class BioGuardML:
                 backoff *= 2
         self.logger.error(f"Alert send permanently failed: {payload['event_id']}")
         return False
-
-
+    
+    
 if __name__ == "__main__":
     app = BioGuardML()
