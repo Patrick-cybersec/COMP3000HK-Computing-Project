@@ -1,70 +1,82 @@
-# COMP3000HK-Computing-Project
-# BioGuard – Spatially Aware Keystroke Authentication
+# BioGuard
 
-## Overview
-BioGuard is a continuous authentication prototype that uses keystroke dynamics to detect impostors in real time. It combines **IsolationForest** and **OneClassSVM** anomaly detectors, supports adaptive retraining, and enforces strict lockouts with audit logging.
+BioGuard is a behavioral biometrics security project that leverages keystroke dynamics and machine learning to detect anomalies in user typing patterns. It integrates cryptographic storage, real‑time monitoring, and an admin dashboard to provide proactive defense against unauthorized access.
 
-## Features
-- Fixed‑text enrollment (pangram sessions)
-- Real‑time monitoring with anomaly thresholds
-- Lockout & unlock workflow
-- Adaptive retraining with confirmed good samples
-- Administrative listener & dashboard
-- Evaluation scripts with ROC AUC, precision, recall, F1 metrics
-- Privacy‑conscious design (timing data only, encrypted profiles)
+---
 
-## Requirements
-- Python 3.11
-- Dependencies: `numpy`, `pandas`, `scikit-learn`, `joblib`, `cryptography`, `pynput`, `tkinter`, `matplotlib`, `shap`, `requests`
+## 📂 Repository Structure
+- `BioGuard-latest/` → **Use this folder** for the newest version of BioGuard.
+- `BioGuard/` → Legacy folder (older version, kept for reference).
+- `data/`, `logs/`, `secure_profiles/` → Supporting datasets and runtime outputs.
+- `.gitignore` → Ensures venv, cache, and junk files are excluded.
+- `requirements.txt` → Python dependencies for recreating the environment.
 
-Install:
+---
+
+## 🚀 Quick Start
+
+### 1. Clone the repository
 ```bash
-pip install -r requirements.txt
-Usage
-Enroll a New User
+git clone https://github.com/Patrick-cybersec/COMP3000HK-Computing-Project.git
+cd COMP3000HK-Computing-Project/BioGuard-latest
+2. Create a virtual environment
+On Windows:
+
 bash
-python bioguard_ml.py
-Click Register New Profile
+python -m venv venv
+venv\Scripts\activate
+On macOS/Linux:
 
-Enter username & password
-
-Complete 3 pangram sessions (≥ 50s each)
-
-Login & Monitor
-Enter credentials → Login & Monitor
-
-System monitors keystrokes
-
-Lockout triggered if anomaly rate > threshold
-
-Evaluation
 bash
-python evaluate_models.py
-Generates ROC AUC, precision, recall, F1 scores per subject.
-
-Admin Listener
+python3 -m venv venv
+source venv/bin/activate
+3. Install dependencies
 bash
-uvicorn admin_listener:app --reload --host 127.0.0.1 --port 8000
-Receives alerts with structured metadata.
+pip install -r ../requirements.txt
+4. Run BioGuard
+Depending on your entry point:
 
-Ethical Considerations
-Only keystroke timing data collected (no text content)
+bash
+python bioguard.py
+or if using FastAPI:
 
-Local encrypted storage
+bash
+uvicorn admin_listener:app --reload
+5. Access the dashboard
+Open your browser at:
 
-GDPR & HK Privacy Ordinance compliance
+Code
+http://127.0.0.1:8000
+🛠 Features
+Keystroke dynamics capture and anomaly detection
 
-Consent form required for all volunteers
+Secure profile storage with cryptography
 
-Repository Contents
-bioguard_ml.py – main client
+Admin dashboard with FastAPI + Uvicorn
 
-admin_listener.py – backend listener
+SHAP‑based model explanations
 
-evaluate_models.py – evaluation script
+Real‑time alerts and logging
 
-plot_results.py – visualization
+📊 Demo Workflow
+Start BioGuard (python bioguard.py).
 
-docs/consent_form.pdf – template consent form
+Type normally — keystroke dynamics are captured.
 
-docs/poster.pdf – showcase poster
+Anomalies trigger alerts in bioguard_alerts.log.
+
+Admin dashboard shows live monitoring at http://127.0.0.1:8000.
+
+⚙️ Requirements
+Python 3.9+
+
+Pip (latest version recommended)
+
+Windows, macOS, or Linux
+
+📌 Notes
+Always activate the virtual environment before running.
+
+Do not commit venv/ or cache files — .gitignore already excludes them.
+
+Use requirements.txt to rebuild the environment cleanly.
