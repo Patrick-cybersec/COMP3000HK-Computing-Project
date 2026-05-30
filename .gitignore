@@ -1,0 +1,15 @@
+# Ignore Python virtual environments
+venv/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+
+# Ignore logs and large datasets
+*.log
+*.npy
+*.csv
+
+# Ignore OS-specific junk
+.DS_Store
+Thumbs.db
