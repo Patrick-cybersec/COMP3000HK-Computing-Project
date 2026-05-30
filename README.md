@@ -37,7 +37,7 @@ pip install -r ../requirements.txt
 Depending on your entry point:
 
 bash
-python bioguard.py
+python bioguard_ml.py
 or if using FastAPI:
 
 bash
@@ -53,8 +53,6 @@ Keystroke dynamics capture and anomaly detection
 Secure profile storage with cryptography
 
 Admin dashboard with FastAPI + Uvicorn
-
-SHAP‑based model explanations
 
 Real‑time alerts and logging
 
